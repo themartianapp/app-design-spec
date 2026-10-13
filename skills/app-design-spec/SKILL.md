@@ -65,12 +65,25 @@ any browser, has no external URLs, and can be sent by mail or chat.
 ## Setup
 
 In the commands below, `<skill>` is the folder that holds this SKILL.md. Keep
-the user's design work in their project, for example in `design/`:
+the user's design work in its own folder, for example `design/`:
 
 ```sh
 mkdir -p design
 cp -r <skill>/assets/example-app/. design/
 ```
+
+Where that folder goes:
+
+- **New app or no rules against it:** `design/` in the user's project.
+- **The project already has a `design/` folder:** never write over it. Use
+  `design/app-design-spec/` or another new name, and treat the old files as
+  inputs to read (see the existing-app checklist).
+- **The design must stay out of the app repo** (the user says so, or the repo
+  only accepts code changes): use a sibling folder such as
+  `../<app>-design/design/`. Record the app repo and commit you read in the
+  brief so later steps can point back to it.
+
+All paths below say `design/`; use whichever folder you chose.
 
 The example holds two worked files, each a script plus its styles:
 
@@ -93,9 +106,9 @@ uv run <skill>/scripts/check.py design/out/spec.html
 The check writes a screenshot of every phone and its report to
 `design/out/spec-check/`. `build.py` needs only the Python standard library.
 `check.py` declares its dependency (playwright) inline, so `uv run` installs
-it; if Chromium is missing, run
-`uv run --with playwright playwright install chromium` once. Without uv:
-`pip install playwright && playwright install chromium`, then
+it. You do not need Chromium for steps 1 and 2; install it before the first
+render check: `uv run --with playwright playwright install chromium`, once.
+Without uv: `pip install playwright && playwright install chromium`, then
 `python3 <skill>/scripts/check.py ...`. See
 [references/checks.md](references/checks.md).
 
@@ -111,9 +124,13 @@ Goal: a one-page brief you and the user agree on.
 - If the app already exists, read its code before you design anything. Use its
   real screens, real data fields and real copy. Note what the code does that
   the user did not mention. The checklist is in
-  [references/brief.md](references/brief.md).
+  [references/brief.md](references/brief.md). For a large app, split the read
+  across parallel readers (one per area, such as navigation, data and copy) if
+  your tools allow it, then merge their notes.
 
-Produce: `design/brief.md` with the template from the reference file.
+Produce: `design/brief.md` (one page, with the template from the reference
+file) and, for an existing app, `design/existing-app-notes.md` with the full
+code inventory.
 
 ## Step 2: Screen map (Gate 1)
 

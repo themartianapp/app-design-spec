@@ -33,6 +33,10 @@ rest.
 **Constraints**
 14. Deadlines, platform minimum (for example iOS 17), accessibility needs,
     languages?
+15. Hard limits that shape the UI: what the platform or a service will not
+    let the app know or do. For example, iOS does not tell an app whether a
+    call was blocked, so no screen can show "blocked calls today". Find these
+    in the code and the platform docs, and ask the user about any you suspect.
 
 ## Reference intake
 
@@ -71,16 +75,27 @@ If the app exists, read the code before you design. Look for:
       location, Face ID, widgets, share sheet.
 - [ ] **Current look**: colours, fonts, spacing values, custom components.
       Note what to keep.
-- [ ] **Settings and flags** that change what a screen shows.
+- [ ] **Settings and feature flags** that change what a screen shows or hide
+      a screen entirely. List every flag and what it turns on.
 - [ ] **Platform minimum** and UI framework (SwiftUI, UIKit, React Native,
       Flutter...).
+- [ ] **Languages**: which locales ship, where strings live, and which
+      strings are hard-coded in views. Design for the longest language.
+- [ ] **Old design material** in the repo (briefs, specs, mockups, store
+      text). Read it, but check every claim against the code: old documents
+      are a common source of wrong copy and features that no longer exist.
 
 Write file paths next to each finding. You will need them for the handoff
-(see [handoff.md](handoff.md)).
+(see [handoff.md](handoff.md)). For a large app, give each reader one area of
+this list and merge the results.
+
+Put the full inventory in `design/existing-app-notes.md`. The brief keeps only
+a short summary and a link to it, so the brief stays one page.
 
 ## Brief template
 
-Save as `design/brief.md`. Keep it to one page.
+Save as `design/brief.md`. Keep it to one page; long material goes in
+separate notes files that the brief links to.
 
 ```md
 # <App name>: design brief
@@ -111,7 +126,11 @@ How it talks, with two example lines.
 | --- | --- | --- |
 
 ## Existing app (if any)
-Framework, platform minimum, main files, what to keep, what to fix.
+Repo and commit read, framework, platform minimum, main files, what to keep,
+what to fix. Full inventory: existing-app-notes.md.
+
+## Hard constraints
+Platform or service limits that shape the UI, one line each.
 
 ## Constraints and open questions
 ...
