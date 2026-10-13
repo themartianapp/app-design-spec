@@ -117,7 +117,7 @@ What to do:
 | `large-text-clip` | Fixed `height` on a row, button or chip | Use `min-height` and padding instead of `height` |
 | `large-text-overflow` | Label and value side by side in one row | Let the label wrap with `min-width: 0` on the flex child, or stack the two at large sizes |
 | `split-word` / `large-text-split-word` | Big number or long word in a narrow box, or `word-break: break-all` | Keep it on one line with `white-space: nowrap` and shrink it with `min()`; see [iphone.md](iphone.md) |
-| `overflow` | Long word or number, fixed widths, negative margins | `overflow-wrap: anywhere` on user text; `max-width: 100%`; check side margins |
+| `overflow` | Long word or number, fixed widths, negative margins | `max-width: 100%` and check side margins. For user text that can hold one very long word (a URL, a code), add `overflow-wrap: anywhere` **and** `data-allow-break` on that element; without it, the split-word check fails it instead |
 | `safe-area` at the top | Content starts at y = 0 | Pad the top with `var(--safe-top)`; the nav bar starts at y = 62 |
 | `safe-area` at the bottom | Button or tab bar at the very bottom | Pad with `var(--safe-bottom)`; the tab bar sits above the home indicator |
 | `contrast` | Muted grey text, or accent text on an accent-tinted surface | Change the colour token, not the single element, then rebuild |

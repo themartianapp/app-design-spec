@@ -33,6 +33,7 @@ URL_RE = re.compile(r"https?://(?!www\.w3\.org/)[^\s'\"`)<>]+", re.I)
 FONT_TYPES = {".woff2": ("font/woff2", "woff2"), ".woff": ("font/woff", "woff"),
               ".ttf": ("font/ttf", "truetype"), ".otf": ("font/otf", "opentype")}
 FONT_NAME_RE = re.compile(r"^(?P<family>.+?)(?:-(?P<weight>[1-9]00))?(?:-(?P<italic>italic))?$", re.I)
+FONT_FAMILY_OK = re.compile(r"[A-Za-z0-9 ._-]+")  # nothing that can break out of the CSS string
 FONT_WARN_BYTES = 2_000_000
 
 
@@ -67,7 +68,9 @@ def font_faces(font_dir: Path) -> tuple[str, list[str]]:
         if not kind or not path.is_file():
             continue
         m = FONT_NAME_RE.match(path.stem)
-        family = m.group("family").replace('"', "")
+        family = m.group("family")
+        if not FONT_FAMILY_OK.fullmatch(family):
+            die(f"font file name {path.name!r}: the family part may use only letters, digits, spaces, '.', '_' and '-'")
         weight = m.group("weight") or "100 900"
         style = "italic" if m.group("italic") else "normal"
         data = path.read_bytes()

@@ -123,7 +123,8 @@ If the app uses a brand font the user owns and may embed:
    example `Inter-400.woff2` and `Inter-600.woff2`. Add `-italic` for italics
    (`Inter-400-italic.woff2`). A file with no weight (`Inter.woff2`) is
    treated as a variable font for weights 100 to 900. `.woff`, `.ttf` and
-   `.otf` work too.
+   `.otf` work too. The family part may use only letters, digits, spaces,
+   `.`, `_` and `-`; the build stops on anything else.
 2. The build embeds every file there as an `@font-face` rule, so the HTML
    still works offline. Use `--fonts <dir>` for another folder. It warns when
    fonts add more than 2 MB; keep only the weights the design uses.
