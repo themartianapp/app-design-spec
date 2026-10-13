@@ -65,14 +65,8 @@ any browser, has no external URLs, and can be sent by mail or chat.
 ## Setup
 
 In the commands below, `<skill>` is the folder that holds this SKILL.md. Keep
-the user's design work in its own folder, for example `design/`:
-
-```sh
-mkdir -p design
-cp -r <skill>/assets/example-app/. design/
-```
-
-Where that folder goes:
+the user's design work in its own folder. Decide where it goes **before** you
+copy anything:
 
 - **New app or no rules against it:** `design/` in the user's project.
 - **The project already has a `design/` folder:** never write over it. Use
@@ -82,6 +76,14 @@ Where that folder goes:
   only accepts code changes): use a sibling folder such as
   `../<app>-design/design/`. Record the app repo and commit you read in the
   brief so later steps can point back to it.
+
+Then copy the starter into the folder you chose (the target must be new or
+empty; `design` here stands for it):
+
+```sh
+mkdir -p design
+cp -r <skill>/assets/example-app/. design/
+```
 
 All paths below say `design/`; use whichever folder you chose.
 
