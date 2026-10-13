@@ -13,9 +13,14 @@ Save as `design/screen-map.md`.
 ## Screens
 | # | Screen | Purpose | Reached from | States |
 | --- | --- | --- | --- | --- |
-| 01 | Home | See today's items at a glance | App launch, Home tab | normal, empty, loading, offline |
-| 02 | Item detail | Read and edit one item | Tap a row on Home | normal, error, large text |
+| 01 | Home | See today's items at a glance | App launch, Home tab | normal, empty, loading, offline (new) |
+| 02 | Item detail | Read and edit one item | Tap a row on Home | normal, error |
 | 03 | Settings | Account and preferences | Settings tab | normal |
+| 04 | Widget setup [iOS] | Add the home screen widget | Settings | normal |
+
+## Applies to every screen
+- Large text: every screen is checked at a large Dynamic Type size.
+- (other rules that hold everywhere, once)
 
 ## Navigation
 (diagram, see below)
@@ -23,6 +28,9 @@ Save as `design/screen-map.md`.
 ## States not needed
 - Settings / empty: always has content.
 - ...
+
+## Pending decisions
+- (question for the user) · Draft: "(the wording or behaviour you propose)"
 
 ## Open questions
 - ...
@@ -35,7 +43,28 @@ Rules:
 - Number screens in the order a new user meets them. These numbers appear in
   the spec sidebar ("01 / 12").
 - Purpose is one sentence from the user's side, not the code's.
-- If the app exists, name the code file for each screen in an extra column.
+- Rules that hold for every screen (large text, dark mode only, right-to-left
+  support) go once under "Applies to every screen", not in every row.
+- **States you propose that the code does not have yet:** mark them `(new)`.
+  Gate 1 then approves them explicitly, and the handoff lists them as new work.
+  Only an existing app needs this marker.
+- **Code paths:** if the app exists, keep the table short. Add a `Code` column
+  with one file per screen, or put the full screen-to-file list in
+  `design/existing-app-notes.md` and link it.
+
+## More than one platform
+
+The skill designs iPhone first. If the app also ships on Android (or iPad):
+
+- Keep one screen map. Mark screens or states that exist on one platform only
+  with `[iOS]` or `[Android]`, as in row 04 above.
+- Say once, under "Applies to every screen", how the other platform is
+  handled. Usually: the iPhone design is the reference, and the Android build
+  adapts system parts (navigation bar, back button, sheets, dialogs, fonts) to
+  Android conventions without its own spec.
+- If a screen must look truly different on the other platform, list it as its
+  own row with the platform marker, and ask at Gate 1 whether it needs its own
+  phone frames in the spec.
 
 ## States checklist
 
@@ -101,6 +130,9 @@ Script:
 >
 > Reply "approved" or tell me what to change. I start on the visual
 > directions after that.
+
+Also list every `(new)` state and every pending decision with its draft, and
+ask for a yes or a change on each.
 
 Do not start visual work until the user approves. If they change things,
 update the file and show the changed rows only.
