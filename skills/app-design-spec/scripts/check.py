@@ -101,6 +101,24 @@ PAGE_CHECKS = r"""
         add('overflow', el, `box spans x ${r1(r.left - S.left)} to ${r1(r.right - S.left)}, screen is 0 to 402`);
       }
     }
+    // Split words: one word or number broken across two lines (e.g. "12,4" / "80"
+    // at large text). Breaks at spaces, hyphens, dashes and slashes are normal.
+    for (const el of els) {
+      if (!ownText(el) || el.closest('[data-allow-truncate],[data-allow-break]') || el.closest('svg')) continue;
+      for (const node of el.childNodes) {
+        if (node.nodeType !== 3) continue;
+        const text = node.textContent;
+        for (const m of text.matchAll(/[^\s\-\u2010-\u2015\/]{2,}/g)) {
+          const rg = document.createRange();
+          rg.setStart(node, m.index); rg.setEnd(node, m.index + m[0].length);
+          const tops = [...rg.getClientRects()].filter(r => r.width > 0.5).map(r => Math.round(r.top));
+          if (new Set(tops.map(t => Math.round(t / 3))).size > 1) {
+            add('split-word', el, `"${m[0].slice(0, 30)}" breaks across lines`);
+            break;
+          }
+        }
+      }
+    }
     if (opts.layoutOnly) continue;
 
     // Safe areas: interactive elements in y < 62 or y > 840.
@@ -200,6 +218,34 @@ class Report:
         return "\n".join(lines)
 
 
+def compare_sheets(page, by_item: dict[str, list[tuple[str, Path]]], out: Path) -> list[str]:
+    """One PNG per proposal item: that screen in every group, side by side, labelled."""
+    import base64 as b64
+    sheets = []
+    for item, rows in by_item.items():
+        if len(rows) < 2:
+            continue
+        cells = "".join(
+            f'<figure><img src="data:image/png;base64,{b64.b64encode(p.read_bytes()).decode()}">'
+            f"<figcaption>{html_escape(group)}</figcaption></figure>"
+            for group, p in rows
+        )
+        page.set_content(
+            "<!doctype html><style>body{margin:0;background:#202024;font:600 15px system-ui;color:#eee}"
+            "main{display:flex;gap:24px;padding:24px;width:max-content}figure{margin:0}"
+            "img{display:block;width:402px}figcaption{margin-top:10px;text-align:center}</style>"
+            f"<main>{cells}</main>"
+        )
+        path = out / f"compare--{safe_name(item)}.png"
+        page.locator("main").screenshot(path=str(path))
+        sheets.append(str(path))
+    return sheets
+
+
+def html_escape(s: str) -> str:
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Render and check a built design spec or proposals file.")
     ap.add_argument("html", type=Path, help="file made by build.py")
@@ -226,6 +272,8 @@ def main() -> None:
     where = {"v": "load"}
     mode = "?"
     phones_seen = 0
+    by_item: dict[str, list[tuple[str, Path]]] = {}  # proposals: item -> [(group, png)]
+    sheets: list[str] = []
 
     with sync_playwright() as p:
         try:
@@ -289,7 +337,7 @@ def main() -> None:
                 settle()
                 for f in page.evaluate(PAGE_CHECKS, {"layoutOnly": large}):
                     check = f["check"]
-                    if large and check in ("clip", "overflow"):
+                    if large and check in ("clip", "overflow", "split-word"):
                         # Already failing at 100%: one report is enough.
                         if (f["where"], check, f["detail"].split(": ")[0]) in normal_hits:
                             continue
@@ -306,6 +354,12 @@ def main() -> None:
                     shots.append(str(path))
                     if not large:
                         phones_seen += 1
+                        if mode == "proposals":
+                            title = ph.evaluate("p => (p.closest('.ads-group')?.querySelector('h2')?.firstChild?.textContent || '').trim()")
+                            by_item.setdefault(ph.get_attribute("data-state"), []).append(
+                                (title or ph.get_attribute("data-screen"), path))
+        if mode == "proposals" and by_item:
+            sheets = compare_sheets(page, by_item, out)
         browser.close()
 
     fails = sum(r["level"] == "FAIL" for r in rep.rows)
@@ -315,10 +369,15 @@ def main() -> None:
     if table:
         print(table)
     print(f"{fails} FAIL · {warns} WARN")
+    if sheets:
+        print("Compare sheets (same screen in every direction; look at them side by side before showing the user):")
+        for s in sheets:
+            print(f"  {s}")
     if a.json:
         (out / "report.json").write_text(json.dumps({
             "file": str(src), "mode": mode, "phones": phones_seen, "fail": fails, "warn": warns,
             "findings": [{k: v for k, v in r.items() if k != "hidden"} for r in rep.rows], "screenshots": shots,
+            "compare_sheets": sheets,
         }, indent=2), encoding="utf-8")
     sys.exit(1 if fails else 0)
 
