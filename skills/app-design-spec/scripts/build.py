@@ -68,7 +68,7 @@ def font_faces(font_dir: Path) -> tuple[str, list[str]]:
         if not kind or not path.is_file():
             continue
         m = FONT_NAME_RE.match(path.stem)
-        family = m.group("family")
+        family = m.group("family") if m else ""
         if not FONT_FAMILY_OK.fullmatch(family):
             die(f"font file name {path.name!r}: the family part may use only letters, digits, spaces, '.', '_' and '-'")
         weight = m.group("weight") or "100 900"
