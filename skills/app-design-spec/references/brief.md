@@ -132,6 +132,10 @@ what to fix. Full inventory: existing-app-notes.md.
 ## Hard constraints
 Platform or service limits that shape the UI, one line each.
 
+## Pending decisions
+Questions only the user can answer, each with your drafted answer or wording:
+- (question) · Draft: "(proposed wording or behaviour)" · Blocks: (which screens)
+
 ## Constraints and open questions
 ...
 ```

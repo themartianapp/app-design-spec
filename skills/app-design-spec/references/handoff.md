@@ -41,7 +41,8 @@ Write tasks in an order that keeps the app working after each one:
    downloads if it has them.
 2. Shared components: rows, buttons, empty-state block, error banner.
 3. Screens, in the order of the screen map. For each screen, build the normal
-   state first, then each other state.
+   state first, then each other state. States marked `(new)` in the screen
+   map do not exist in the code yet: list each one as its own task.
 4. Copy: apply the voice table (Instead of / Say) to every string, including
    errors and alerts.
 5. Accessibility: Dynamic Type at large sizes, VoiceOver labels, 44 pt targets.
