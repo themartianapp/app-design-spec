@@ -1,6 +1,6 @@
 /* Deliberately broken fixture for check.py: each state plants one defect class.
    Expected FAILs: clip, overflow, safe-area (top + bottom), contrast,
-   large-text-clip, large-text-overflow, network. Expected exit code: 1.
+   large-text-clip, large-text-overflow, large-text-split-word, network. Expected exit code: 1.
    Build with --allow-url, otherwise build.py rejects the external image (exit 2). */
 const scr = (title, body) => h`<div class="bk"><h1 class="t-title">${title}</h1>${body}</div>`;
 defineSpec({
@@ -21,6 +21,7 @@ defineSpec({
         { id: 'contrast', label: 'Low contrast', render: () => scr('Contrast', h`<p class="t-body bk-faint">Hard to read grey text</p>`) },
         { id: 'large-only', label: 'Clips at large text', render: () => scr('Large text', h`<p class="t-body bk-fixed">Fits at 100% only</p>`) },
         { id: 'large-wide', label: 'Overflows at large text', render: () => scr('Large wide', h`<p class="t-body bk-grow">Tap and hold any spot to rename it later</p>`) },
+        { id: 'large-split', label: 'Number splits at large text', render: () => scr('Large number', h`<p class="bk-hero">12,480</p>`) },
         { id: 'network', label: 'External URL', render: () => scr('Network', h`<img alt="" width="40" height="40" src="https://example.com/logo.png"><p class="t-body">Loads an image from the web.</p>`) }
       ]
     }

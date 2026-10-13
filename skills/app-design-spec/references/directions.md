@@ -33,13 +33,33 @@ Tie each direction to the brief: one of the three feel words, or a reference
 the user liked. Give each a short name and a one-line blurb, for example
 "B · Quiet: light grey surfaces, one blue accent, roomy rows".
 
-Check contrast in every direction. A direction that fails 4.5:1 for body text
-is not a real option (see [iphone.md](iphone.md)).
+Check contrast in every direction **before you build it**: work out the ratio
+of each text colour against each surface it sits on. The checker only measures
+the text that is on screen, so a colour pair it never sees can still fail in
+the final spec. A direction that fails 4.5:1 for body text is not a real
+option (see [iphone.md](iphone.md)).
+
+If a direction breaks a rule from the brief (a brand colour it drops, a
+"light only" app shown dark, a font it swaps), say so in its blurb, for
+example "Drops the brand green for a cooler teal." The user should never find
+that out by accident.
+
+## Make sure they really differ
+
+Directions that pass every check can still look the same. Before Gate 2:
+
+1. Run the checker. For a proposals file it also writes compare sheets:
+   `compare--<screen>.png` in the check folder, one per screen, showing that
+   screen in every direction side by side.
+2. Look at each sheet. Squint test: could someone tell the directions apart
+   from across a room? If two look nearly alike, change at least two axes on
+   one of them (for example palette and shape), rebuild and look again.
+3. Only then send the file.
 
 ## The file
 
-Write `design/directions.js` with `defineProposals`. Start from a copy of the
-example's `proposals.js`, and copy `proposals.css` to `directions.css` (the
+Write `design/directions.js` with `defineProposals`. Rename the example's
+`proposals.js` and `proposals.css` to `directions.js` and `directions.css` (the
 build inlines the CSS file named after the entry, or `app.css` if there is
 none). One group per direction; the group's `tokens` use the same shape as the
 spec tokens, so the winning direction's tokens move straight into `app.js`
@@ -80,7 +100,8 @@ python3 <skill>/scripts/build.py design --entry directions.js -o design/out/dire
 uv run <skill>/scripts/check.py design/out/directions.html
 ```
 
-Screenshots and the report land in `design/out/directions-check/`.
+Screenshots, compare sheets and the report land in
+`design/out/directions-check/`.
 
 ## Gate 2
 

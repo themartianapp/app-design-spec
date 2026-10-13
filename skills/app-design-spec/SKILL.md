@@ -96,7 +96,15 @@ The example holds two worked files, each a script plus its styles:
 Each step has its own entry file in `design/`: `directions.js`,
 `variants.js` and `app.js`. The build inlines the CSS file with the same name
 (`directions.css` for `directions.js`), or `app.css` when there is none.
-Replace the example content step by step; keep the structure.
+Replace the example content step by step; keep the structure. Rename the
+example `proposals.js` and `proposals.css` to `directions.js` and
+`directions.css` when you start step 3; there is no need to keep a separate
+copy, since the skill folder still has the original.
+
+Brand fonts the user owns and may embed go in `design/fonts/`, named
+`<Family>-<weight>.woff2` (for example `Inter-600.woff2`). The build embeds
+them so the file still works offline. See
+[references/iphone.md](references/iphone.md).
 
 Build and check, every time before you show a file to the user:
 
@@ -160,8 +168,15 @@ Goal: let the user choose a look by seeing it on real screens.
   same real content, so only the look differs.
 - Vary palette, type, density and shape between directions. Details in
   [references/directions.md](references/directions.md).
-- Write `design/directions.js` (start from a copy of `proposals.js` and
-  `proposals.css`) with `defineProposals`, one group per direction.
+- Write `design/directions.js` (renamed from the example `proposals.js`, with
+  `proposals.css` renamed to `directions.css`) with `defineProposals`, one
+  group per direction.
+- Before building, check each palette's text colours against its backgrounds
+  for contrast. If a direction breaks a brand rule from the brief, say so in
+  its blurb.
+- After the check, open the compare sheets it writes (one image per screen,
+  every direction side by side). If two directions look alike at a glance,
+  change one before you show the user.
 
 Produce: `design/out/directions.html` (built and checked).
 

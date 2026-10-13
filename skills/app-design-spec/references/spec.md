@@ -72,7 +72,7 @@ spec is incomplete without them.
 | `app.name`, `app.subtitle` | always | Top of the sidebar and the page title |
 | `app.intro` | optional | HTML at the top of the Foundations page |
 | `tokens.color` | always | Swatches with hex value and contrast against `bg`, tagged TEXT OK (4.5:1 and up), LARGE TEXT ONLY (3:1 and up), FILL / SURFACE (below 1.5:1) or NOT FOR TEXT; CSS vars `--c-<name>` |
-| `tokens.type` | always | Type ramp. Entry: `{ size, line, weight, font, tracking, sample }`; only `size` is needed (`line` defaults to size × 1.25, `weight` to 400). `font` is `text`, `display`, `rounded`, `serif` or `mono` (system font stacks). `tracking` is letter spacing in px. `sample` is the text shown on the ramp |
+| `tokens.type` | always | Type ramp. Entry: `{ size, line, weight, font, tracking, sample }`; only `size` is needed (`line` defaults to size × 1.25, `weight` to 400). `font` is either a name, `text`, `display`, `rounded`, `serif` or `mono` (the system font stacks), or any CSS `font-family` list, for example `'"Inter", var(--font-text)'` for an embedded brand font (see [iphone.md](iphone.md)). With no `font`, sizes 20 and up use `display`, smaller sizes `text`. `tracking` is letter spacing in px. `sample` is the text shown on the ramp |
 | `tokens.space` | always | Spacing scale in pt; CSS vars `--s-<name>` |
 | `tokens.radius` | always | Corner radii in pt; CSS vars `--r-<name>` |
 | `voice[]` | recommended | `{ instead, say, why }`, `why` optional; the "Instead of / Say" table on Foundations and its own Voice page |

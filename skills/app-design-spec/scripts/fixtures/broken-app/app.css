@@ -15,3 +15,5 @@
 .bk-fixed{height:22px;overflow:hidden}
 /* large-text-overflow: one unbreakable line that fits at 100% but not at 135% */
 .bk-grow{white-space:nowrap;width:max-content}
+/* large-text-split-word: a hero number in a narrow box that breaks mid-digits at 135% */
+.bk-hero{width:150px;font-size:calc(40px * var(--text-scale, 1));font-weight:700;line-height:1.1;word-break:break-all;color:var(--c-text)}

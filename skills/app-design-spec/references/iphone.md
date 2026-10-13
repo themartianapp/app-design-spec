@@ -92,9 +92,15 @@ Design for large text:
 - Truncate only where the content allows it (long names in a list), and mark
   those elements with `data-allow-truncate` so the checker accepts it.
 - Add a "Large text" state to the screens where the layout changes.
+- Big numbers and single words (a balance, a score, a hero title) must not
+  break in the middle. Keep them on one line with `white-space: nowrap`, and
+  let them shrink instead: give the box `max-width: 100%` and size the text
+  with `min()` or `clamp()`, for example
+  `font-size: min(calc(56px * var(--text-scale)), 14vw)`, or put them on their
+  own line at large sizes.
 
-The checker reloads every file at scale 1.35 and repeats the clipping and
-overflow checks.
+The checker reloads every file at scale 1.35 and repeats the clipping,
+overflow and split-word checks.
 
 ## Fonts
 
@@ -109,8 +115,23 @@ redistribution. So:
   fallback font. Leave a little slack in tight rows, and check the final file
   on an Apple device when you can.
 
-If the app uses a custom brand font the user owns and may embed, it can be
-inlined as a `data:` URL in `app.css`. Never fetch fonts from the web.
+### Brand fonts
+
+If the app uses a brand font the user owns and may embed:
+
+1. Put the files in `design/fonts/`, named `<Family>-<weight>.woff2`, for
+   example `Inter-400.woff2` and `Inter-600.woff2`. Add `-italic` for italics
+   (`Inter-400-italic.woff2`). A file with no weight (`Inter.woff2`) is
+   treated as a variable font for weights 100 to 900. `.woff`, `.ttf` and
+   `.otf` work too. The family part may use only letters, digits, spaces,
+   `.`, `_` and `-`; the build stops on anything else.
+2. The build embeds every file there as an `@font-face` rule, so the HTML
+   still works offline. Use `--fonts <dir>` for another folder. It warns when
+   fonts add more than 2 MB; keep only the weights the design uses.
+3. Use the family name in the tokens: `font: '"Inter", var(--font-text)'`
+   (see [spec.md](spec.md)). Keep a system font after it as the fallback.
+
+Never fetch fonts from the web; the build and the checker both reject it.
 
 ## Colour and contrast
 

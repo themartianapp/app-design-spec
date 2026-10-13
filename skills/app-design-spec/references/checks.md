@@ -37,13 +37,21 @@ The checker runs twice: once at normal text size, once at text scale 1.35
 | `contrast` | FAIL | Text below 4.5:1 against the background behind it (3:1 for text 24 px and up, or 18.66 px and up at weight 700 or more) |
 | `large-text-clip` | FAIL | `clip` in the 1.35 pass, for elements that were fine at normal size |
 | `large-text-overflow` | FAIL | `overflow` in the 1.35 pass, for elements that were fine at normal size |
+| `large-text-split-word` | FAIL | In the 1.35 pass, one word or number broken across two lines (for example "12,4" / "80"). Breaks at spaces, hyphens, dashes and slashes are fine. Opt out with `data-allow-break` |
 | `structure` | FAIL | No `defineSpec` or `defineProposals` call ran, a spec with no screens, a screen with no states, or a group with no items |
 | `structure` | WARN | A screen with no edge state: no state whose id or label contains empty, error, offline, loading, denied, off or no results |
 
-The 1.35 pass runs `clip` and `overflow` only; safe areas and contrast are
-checked once, at normal size. An element that already fails at normal size is
-not reported again in the 1.35 pass, so `large-text-*` findings are problems
-that only large text causes.
+The split-word check also runs at normal size and reports as `split-word`.
+The 1.35 pass runs `clip`, `overflow` and split words only; safe areas and
+contrast are checked once, at normal size. An element that already fails at
+normal size is not reported again in the 1.35 pass, so `large-text-*`
+findings are problems that only large text causes.
+
+For a proposals file the checker also writes **compare sheets**:
+`compare--<item>.png`, one per screen, showing that screen in every group side
+by side with the group titles. They are not checks; they are for you to look
+at before Gate 2 (see [directions.md](directions.md)). The summary lists their
+paths, and `--json` adds them as `compare_sheets`.
 
 Built-in exemptions:
 
@@ -108,11 +116,12 @@ What to do:
 | `clip` on a row label | Fixed width or height with `overflow: hidden` | Let it wrap and drop the fixed height. If cutting is right (a long name in a one-line row), add `data-allow-truncate` |
 | `large-text-clip` | Fixed `height` on a row, button or chip | Use `min-height` and padding instead of `height` |
 | `large-text-overflow` | Label and value side by side in one row | Let the label wrap with `min-width: 0` on the flex child, or stack the two at large sizes |
-| `overflow` | Long word or number, fixed widths, negative margins | `overflow-wrap: anywhere` on user text; `max-width: 100%`; check side margins |
+| `split-word` / `large-text-split-word` | Big number or long word in a narrow box, or `word-break: break-all` | Keep it on one line with `white-space: nowrap` and shrink it with `min()`; see [iphone.md](iphone.md) |
+| `overflow` | Long word or number, fixed widths, negative margins | `max-width: 100%` and check side margins. For user text that can hold one very long word (a URL, a code), add `overflow-wrap: anywhere` **and** `data-allow-break` on that element; without it, the split-word check fails it instead |
 | `safe-area` at the top | Content starts at y = 0 | Pad the top with `var(--safe-top)`; the nav bar starts at y = 62 |
 | `safe-area` at the bottom | Button or tab bar at the very bottom | Pad with `var(--safe-bottom)`; the tab bar sits above the home indicator |
 | `contrast` | Muted grey text, or accent text on an accent-tinted surface | Change the colour token, not the single element, then rebuild |
-| `network` | Web font, CDN script, remote image | Remove it. Use the system fonts, inline SVG, or a `data:` URL |
+| `network` | Web font, CDN script, remote image | Remove it. Use the system fonts, inline SVG, or embed brand fonts from `design/fonts/` (see [iphone.md](iphone.md)) |
 | `console` "render failed for ..." | A render function threw | Read the message; usually a missing field in sample data or a typo |
 | `structure` "no defineSpec() ..." | The script stopped before the call | Look at the `console` finding above it for the real error |
 
@@ -122,10 +131,10 @@ in your CSS; use the `.t-<name>` classes (see [spec.md](spec.md)).
 ## Build errors
 
 `build.py` stops with exit code 2 and a message when the app folder, the
-entry file, a CSS file given with `--css`, the shell or one of its markers is
-missing, or when an app file contains an `http://` or `https://` URL. SVG
-namespace URLs on `www.w3.org` are allowed. Remove the URL; do not use
-`--allow-url` for files you deliver.
+entry file, a CSS file given with `--css`, a `--fonts` folder (or font files
+inside it), the shell or one of its markers is missing, or when an app file
+contains an `http://` or `https://` URL. SVG namespace URLs on `www.w3.org`
+are allowed. Remove the URL; do not use `--allow-url` for files you deliver.
 
 ## Proving the checker works
 
