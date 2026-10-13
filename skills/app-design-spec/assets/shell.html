@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  app-design-spec shell. One self-contained file: no external URLs, no web fonts.
+  Fonts are system stacks only. SF Pro cannot be bundled (Apple licence), so on a Mac
+  or iPhone the stacks resolve to SF; elsewhere they fall back to Helvetica/Arial,
+  which have similar widths, so layout checks stay close to the device.
+  Build: scripts/build.py replaces the APP:STYLE and APP:SCRIPT markers below.
+-->
+<style>
+:root{
+  --text-scale:1; --safe-top:62px; --safe-bottom:34px;
+  --font-text:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  --font-rounded:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,system-ui,sans-serif;
+  --font-serif:ui-serif,"New York","Iowan Old Style",Georgia,"Times New Roman",serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono",monospace;
+  --ads-bg:#0c0d10; --ads-side:#111216; --ads-panel:#15171c; --ads-panel2:#1b1e24;
+  --ads-line:rgba(255,255,255,.07); --ads-line2:rgba(255,255,255,.13);
+  --ads-text:#e9eaed; --ads-muted:#9aa0aa; --ads-faint:#6b717b;
+  --ads-accent:#9cc0ff; --ads-accent-bg:rgba(156,192,255,.11);
+  --ads-good:#7fd3a3; --ads-warn:#f0c674; --ads-bad:#f08a80;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;background:var(--ads-bg);color:var(--ads-text);font:14px/1.5 var(--font-text);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{min-height:100vh}
+.ads-app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+.ads-mode-proposals .ads-app{display:block}
+.ads-mode-proposals .ads-side{display:none}
+
+/* ——— Sidebar ——— */
+.ads-side{position:sticky;top:0;height:100vh;overflow:auto;background:var(--ads-side);border-right:1px solid var(--ads-line);padding:22px 14px 18px;display:flex;flex-direction:column;gap:18px}
+.ads-brand{padding:0 8px}
+.ads-brand b{display:block;font:500 22px/1.15 var(--font-serif);letter-spacing:-.2px;color:var(--ads-text)}
+.ads-brand small{display:block;margin-top:6px;font:11px/1.45 var(--font-mono);color:var(--ads-faint);letter-spacing:.2px}
+.ads-nav{display:flex;flex-direction:column;gap:1px}
+.ads-navlabel{font:600 10px/1 var(--font-mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--ads-faint);padding:14px 8px 8px}
+.ads-navlabel:first-child{padding-top:0}
+.ads-navitem{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:9px;color:var(--ads-muted);text-decoration:none;font-size:14px;line-height:20px;transition:background .12s,color .12s}
+.ads-navitem:hover{background:rgba(255,255,255,.04);color:var(--ads-text)}
+.ads-navitem[aria-current="page"]{background:var(--ads-accent-bg);color:var(--ads-text)}
+.ads-navitem[aria-current="page"] .ads-num{color:var(--ads-accent)}
+.ads-num{font:500 11px/1 var(--font-mono);color:var(--ads-faint);width:18px;flex:none}
+.ads-navt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ads-navc{font:11px/1 var(--font-mono);color:var(--ads-faint);flex:none}
+.ads-tools{margin-top:auto;display:flex;flex-direction:column;gap:7px;padding:0 4px}
+.ads-btn{appearance:none;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0;padding:8px 12px;border-radius:10px;border:1px solid var(--ads-line2);background:transparent;color:var(--ads-text);font:500 12.5px/18px var(--font-text);cursor:pointer;text-align:center;transition:background .12s,border-color .12s}
+.ads-btn:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.22)}
+.ads-btn[aria-pressed="true"]{background:var(--ads-accent-bg);border-color:rgba(156,192,255,.45);color:var(--ads-accent)}
+.ads-btn svg{width:14px;height:14px;flex:none}
+.ads-tools hr{border:0;border-top:1px solid var(--ads-line);margin:4px 0}
+
+/* ——— Main ——— */
+.ads-main{min-width:0;padding:34px 40px 80px}
+.ads-head{display:flex;align-items:flex-end;gap:24px;padding-bottom:22px;border-bottom:1px solid var(--ads-line);margin-bottom:30px}
+.ads-head-text{flex:1;min-width:0}
+.ads-eyebrow{display:flex;align-items:center;gap:10px;font:500 10.5px/1 var(--font-mono);letter-spacing:1.6px;text-transform:uppercase;color:var(--ads-muted)}
+.ads-eyebrow::before{content:"";width:22px;height:1px;background:var(--ads-faint)}
+.ads-eyebrow .ads-flag{color:var(--ads-warn)}
+.ads-h1{font:400 44px/1.08 var(--font-serif);letter-spacing:-.6px;margin:12px 0 0;color:var(--ads-text)}
+.ads-lede{max-width:680px;margin:12px 0 0;color:var(--ads-muted);font-size:15px;line-height:1.55}
+.ads-lede b,.ads-lede strong{color:var(--ads-text);font-weight:600}
+.ads-code{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;font:11.5px/1 var(--font-mono);color:var(--ads-faint)}
+.ads-code code{font:11.5px/1 var(--font-mono);color:var(--ads-muted);background:var(--ads-panel2);border:1px solid var(--ads-line);border-radius:6px;padding:4px 7px}
+.ads-seg{display:inline-flex;padding:3px;border-radius:10px;background:var(--ads-panel);border:1px solid var(--ads-line);flex:none}
+.ads-seg button{appearance:none;border:0;margin:0;background:transparent;color:var(--ads-muted);font:500 11px/1 var(--font-mono);padding:7px 10px;border-radius:7px;cursor:pointer}
+.ads-seg button[aria-pressed="true"]{background:rgba(255,255,255,.09);color:var(--ads-text)}
+.ads-h2{font:400 28px/1.15 var(--font-serif);letter-spacing:-.3px;margin:44px 0 6px;color:var(--ads-text)}
+.ads-h2:first-child{margin-top:0}
+.ads-sub{color:var(--ads-muted);margin:0 0 18px;max-width:720px}
+.ads-sub code,.ads-lede code,.ads-card code,.ads-note code,.ads-voice code{font:12px/1 var(--font-mono);background:rgba(255,255,255,.06);border-radius:4px;padding:2px 5px;color:var(--ads-text)}
+
+/* ——— States row ——— */
+.ads-states{display:flex;flex-wrap:wrap;gap:44px 40px;align-items:flex-start}
+.ads-state{flex:none;margin:0}
+.ads-state>header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 6px 12px}
+.ads-state>header b{font:600 13px/1.2 var(--font-text);color:var(--ads-text)}
+.ads-state>header span{font:10.5px/1 var(--font-mono);color:var(--ads-faint);letter-spacing:.6px}
+.ads-state>p{max-width:422px;margin:12px 0 0;padding:0 6px;color:var(--ads-muted);font-size:13px;line-height:1.5}
+.ads-zoomwrap{width:max-content}
+
+/* ——— Notes ——— */
+.ads-notes{margin-top:52px;padding-top:30px;border-top:1px solid var(--ads-line)}
+.ads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.ads-card,.ads-note{background:var(--ads-panel);border:1px solid var(--ads-line);border-radius:14px;padding:16px 18px}
+.ads-card h3,.ads-note h3{margin:0 0 6px;font:600 13.5px/1.35 var(--font-text);color:var(--ads-text)}
+.ads-card div,.ads-note div{color:var(--ads-muted);font-size:13.5px;line-height:1.55}
+.ads-note div p{margin:0 0 8px}.ads-note div p:last-child{margin:0}
+.ads-note ul{margin:6px 0 0;padding-left:18px}
+.ads-pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px}
+.ads-pager a{flex:1;max-width:320px;display:block;padding:14px 16px;border:1px solid var(--ads-line);border-radius:12px;color:var(--ads-text);text-decoration:none}
+.ads-pager a:hover{border-color:var(--ads-line2);background:rgba(255,255,255,.03)}
+.ads-pager a small{display:block;font:10.5px/1 var(--font-mono);letter-spacing:1.2px;text-transform:uppercase;color:var(--ads-faint);margin-bottom:6px}
+.ads-pager a.next{text-align:right;margin-left:auto}
+
+/* ——— Foundations ——— */
+.ads-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.ads-swatch{background:var(--ads-panel);border:1px solid var(--ads-line);border-radius:14px;overflow:hidden}
+.ads-swatch i{display:block;height:78px;border-bottom:1px solid var(--ads-line)}
+.ads-swatch div{padding:10px 12px 12px}
+.ads-swatch b{display:block;font:600 12.5px/1.3 var(--font-mono);color:var(--ads-text)}
+.ads-swatch span{display:block;font:11.5px/1.5 var(--font-mono);color:var(--ads-muted);margin-top:2px}
+.ads-swatch span.ads-tag{display:inline-block;margin:6px 0 0}
+.ads-tag{display:inline-block;font:600 9.5px/1 var(--font-mono);letter-spacing:.6px;padding:3px 5px;border-radius:4px;margin-left:4px;vertical-align:1px}
+.ads-tag.good{background:rgba(127,211,163,.13);color:var(--ads-good)}
+.ads-tag.warn{background:rgba(240,198,116,.13);color:var(--ads-warn)}
+.ads-tag.bad{background:rgba(240,138,128,.13);color:var(--ads-bad)}
+.ads-tag.fill{background:rgba(255,255,255,.06);color:var(--ads-muted)}
+.ads-ramp{border:1px solid var(--ads-line);border-radius:14px;overflow:hidden}
+.ads-ramp-row{display:grid;grid-template-columns:150px minmax(0,1fr) 170px;gap:18px;align-items:center;padding:14px 18px;border-top:1px solid var(--ads-line);background:var(--c-bg,#fff);color:var(--c-text,#000)}
+.ads-ramp-row:first-child{border-top:0}
+.ads-ramp-row code{font:11.5px/1.3 var(--font-mono);color:inherit;opacity:.7}
+.ads-ramp-row .ads-sample{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ads-ramp-row .ads-meta{font:11.5px/1.4 var(--font-mono);opacity:.7;text-align:right}
+.ads-bars{display:flex;flex-direction:column;gap:8px}
+.ads-bar{display:grid;grid-template-columns:110px 60px 1fr;align-items:center;gap:12px;font:12px/1 var(--font-mono);color:var(--ads-muted)}
+.ads-bar b{color:var(--ads-text);font-weight:500}
+.ads-bar i{display:block;height:14px;border-radius:3px;background:var(--ads-accent);opacity:.75}
+.ads-radii{display:flex;flex-wrap:wrap;gap:16px}
+.ads-radius{display:flex;flex-direction:column;align-items:center;gap:8px;font:11.5px/1.3 var(--font-mono);color:var(--ads-muted);text-align:center}
+.ads-radius i{display:block;width:88px;height:88px;border:1.5px solid var(--ads-accent);background:var(--ads-accent-bg)}
+.ads-radius b{color:var(--ads-text);font-weight:500}
+.ads-voice{width:100%;border-collapse:collapse;font-size:14px}
+.ads-voice th{text-align:left;font:600 10px/1 var(--font-mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--ads-faint);padding:0 12px 10px;border-bottom:1px solid var(--ads-line2)}
+.ads-voice td{padding:11px 12px;border-bottom:1px solid var(--ads-line);vertical-align:top}
+.ads-voice td:first-child{font:12.5px/1.5 var(--font-mono);color:var(--ads-muted);width:42%}
+.ads-voice td:first-child s{text-decoration-color:rgba(240,138,128,.6)}
+.ads-voice td:nth-child(2){font-weight:600;color:var(--ads-text)}
+.ads-voice td:nth-child(3){color:var(--ads-muted);font-size:13px}
+
+/* ——— Phone frame (DOM contract: .phone > .screen, 402 × 874 pt) ——— */
+.phone{position:relative;width:422px;height:894px;padding:10px;border-radius:66px;background:#050506;box-shadow:0 0 0 1.5px #2b2e35,0 0 0 4px #15161a,0 0 0 5px #2b2e35,0 40px 80px -30px rgba(0,0,0,.75);flex:none}
+.screen{position:relative;width:402px;height:874px;overflow:hidden;border-radius:56px;isolation:isolate;background:var(--c-bg,#fff);color:var(--c-text,#000);font-family:var(--font-text);font-size:calc(17px * var(--text-scale));line-height:1.29;letter-spacing:0;text-align:left;-webkit-font-smoothing:antialiased;cursor:default}
+.screen *,.screen *::before,.screen *::after{box-sizing:border-box}
+.screen *{scrollbar-width:none}
+.screen ::-webkit-scrollbar{display:none}
+.screen :where(h1,h2,h3,h4,h5,h6,p,ul,ol,li,figure,blockquote,dl,dd){margin:0;padding:0;font:inherit}
+.screen :where(ul,ol){list-style:none}
+.screen :where(button,input,select,textarea){font:inherit;color:inherit;margin:0}
+.screen :where(button){appearance:none;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+.screen :where(a){color:inherit;text-decoration:none}
+.screen :where(svg){display:block}
+.ads-body{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.ads-status{position:absolute;z-index:40;top:11px;left:0;right:0;height:37px;display:flex;justify-content:space-between;color:var(--status-fg,var(--c-text,#000));pointer-events:none}
+.ads-status>span{width:138px;display:flex;align-items:center;justify-content:center;gap:6px}
+.ads-status .ads-time{font:600 17px/1 var(--font-text);letter-spacing:-.2px;padding-left:10px}
+.ads-status svg{display:block}
+.ads-island{position:absolute;z-index:41;top:11px;left:138px;width:126px;height:37px;border-radius:18.5px;background:#000;pointer-events:none}
+.ads-homebar{position:absolute;z-index:40;left:129px;bottom:8px;width:144px;height:5px;border-radius:3px;background:var(--status-fg,var(--c-text,#000));pointer-events:none}
+.safe-top,.safe-bottom{position:absolute;z-index:39;left:0;right:0;pointer-events:none;display:none}
+.safe-top{top:0;height:62px}
+.safe-bottom{top:840px;height:34px}
+.ads-insp-on .safe-top,.ads-insp-on .safe-bottom{display:block;background:repeating-linear-gradient(135deg,rgba(255,80,120,.16) 0 6px,rgba(255,80,120,.04) 6px 12px)}
+.ads-render-error{margin:90px 20px;padding:16px;border-radius:12px;background:#3b1212;color:#ffd7d2;font:13px/1.45 var(--font-mono);white-space:pre-wrap}
+
+/* ——— Inspector ——— */
+.ads-insp-on .screen,.ads-insp-on .screen *{cursor:crosshair}
+.ads-hl{position:fixed;z-index:1000;pointer-events:none;border:1px solid #ff5a8a;background:rgba(255,90,138,.08)}
+.ads-hl-pad{position:fixed;z-index:999;pointer-events:none;background:rgba(122,200,140,.28)}
+.ads-tip{position:fixed;z-index:1001;pointer-events:none;max-width:330px;padding:10px 12px;border-radius:10px;background:rgba(18,19,23,.96);border:1px solid var(--ads-line2);box-shadow:0 12px 30px rgba(0,0,0,.5);font:11.5px/1.6 var(--font-mono);color:var(--ads-muted)}
+.ads-tip b{display:block;font:600 12.5px/1.4 var(--font-text);color:#fff;margin-bottom:3px}
+.ads-tip i{font-style:normal;color:var(--ads-text)}
+.ads-toast{position:fixed;z-index:1100;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;padding:9px 16px;border-radius:999px;background:#24272e;border:1px solid var(--ads-line2);color:var(--ads-text);font-size:13px;transition:opacity .18s,transform .18s;pointer-events:none}
+.ads-toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ——— Proposals mode ——— */
+.ads-ptop{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;padding:12px 40px;background:rgba(12,13,16,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--ads-line)}
+.ads-ptop b{font:500 15px/1.2 var(--font-serif);color:var(--ads-text);white-space:nowrap}
+.ads-ptop nav{flex:1;display:flex;gap:4px;overflow:auto;min-width:0}
+.ads-ptop nav a{font:500 12px/1 var(--font-text);color:var(--ads-muted);text-decoration:none;padding:7px 10px;border-radius:8px;white-space:nowrap}
+.ads-ptop nav a:hover{color:var(--ads-text);background:rgba(255,255,255,.05)}
+.ads-ptop .ads-btn{width:auto;padding:6px 11px}
+.ads-group{padding:44px 0 20px;border-top:1px solid var(--ads-line);scroll-margin-top:30px}
+.ads-group:first-of-type{border-top:0}
+.ads-ghead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 30px;align-items:start;margin-bottom:24px}
+.ads-ghead h2{margin:0;font:400 32px/1.1 var(--font-serif);letter-spacing:-.3px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ads-ghead p{margin:8px 0 0;color:var(--ads-muted);max-width:640px;font-size:15px}
+.ads-pick{display:inline-flex;align-items:center;gap:5px;font:600 10.5px/1 var(--font-mono);letter-spacing:1.2px;text-transform:uppercase;color:#0c0d10;background:var(--ads-good);padding:5px 8px;border-radius:999px}
+.ads-why{margin-top:12px;padding:12px 14px;border-left:2px solid var(--ads-good);background:rgba(127,211,163,.06);border-radius:0 10px 10px 0;color:var(--ads-text);font-size:13.5px;max-width:640px}
+.ads-chips{display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.ads-chiprow{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:520px}
+.ads-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 9px 5px 6px;border-radius:999px;background:var(--ads-panel);border:1px solid var(--ads-line);font:11px/1 var(--font-mono);color:var(--ads-muted);white-space:nowrap}
+.ads-chip i{width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.ads-chip em{font-style:normal;color:var(--ads-text);font-size:14px;line-height:1}
+.ads-chip span{color:var(--ads-faint)}
+.ads-strip{display:flex;gap:36px;overflow-x:auto;padding:6px 6px 26px;margin:0 -6px;align-items:flex-start}
+.ads-item{flex:none;margin:0}
+.ads-item figcaption{display:flex;align-items:center;gap:8px;padding:0 6px 12px;font:600 13px/1.2 var(--font-text);color:var(--ads-text)}
+.ads-item figcaption .ads-pick{font-size:9.5px;padding:4px 7px}
+.ads-item>p{margin:12px 0 0;padding:0 6px;color:var(--ads-muted);font-size:13px;line-height:1.5}
+.ads-mode-proposals .phone{cursor:zoom-in}
+.ads-mode-proposals.ads-insp-on .phone{cursor:crosshair}
+.ads-lightbox{position:fixed;inset:0;z-index:900;background:rgba(5,6,8,.88);display:flex;align-items:center;justify-content:center;cursor:zoom-out;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ads-lightbox .phone{cursor:zoom-out}
+.ads-lightbox figcaption{position:absolute;top:18px;left:0;right:0;text-align:center;color:var(--ads-muted);font-size:13px}
+
+@media (max-width:860px){
+  .ads-app{display:block}
+  .ads-side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--ads-line)}
+  .ads-main{padding:24px 18px 60px}
+  .ads-head{flex-wrap:wrap}
+  .ads-ptop{padding:10px 18px}
+  .ads-ghead{grid-template-columns:1fr}
+  .ads-chips{align-items:flex-start}.ads-chiprow{justify-content:flex-start}
+}
+@media print{.ads-side,.ads-ptop,.ads-seg{display:none}.ads-app{display:block}}
+</style>
+<style id="ads-tokens"></style>
+<!-- APP:STYLE -->
+</head>
+<body>
+<div class="ads-app">
+  <aside class="ads-side" aria-label="Contents">
+    <div class="ads-brand"><b id="ads-name"></b><small id="ads-subtitle"></small></div>
+    <nav class="ads-nav" id="ads-nav"></nav>
+    <div class="ads-tools" id="ads-tools"></div>
+  </aside>
+  <main class="ads-main" id="ads-main"></main>
+</div>
+<div class="ads-hl-pad" id="ads-hl-pad" hidden></div>
+<div class="ads-hl" id="ads-hl" hidden></div>
+<div class="ads-tip" id="ads-tip" hidden></div>
+<div class="ads-toast" id="ads-toast" role="status"></div>
+<script>
+(function () {
+  'use strict';
+
+  /* ——— HTML helpers (exported) ———
+     h`<b>${name}</b>` escapes every interpolation. raw(str) opts out. Arrays are joined,
+     null / undefined / false render nothing. h returns a Raw, so h templates nest. */
+  function Raw(s) { this.s = String(s); }
+  Raw.prototype.toString = function () { return this.s; };
+  const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ESC[c]); }
+  function raw(s) { return new Raw(s == null ? '' : s); }
+  function part(v) {
+    if (v == null || v === false) return '';
+    if (v instanceof Raw) return v.s;
+    if (Array.isArray(v)) return v.map(part).join('');
+    return esc(v);
+  }
+  function h(strings, ...vals) {
+    let out = strings[0];
+    for (let i = 0; i < vals.length; i++) out += part(vals[i]) + strings[i + 1];
+    return new Raw(out);
+  }
+  const html = v => (v instanceof Raw ? v.s : v == null ? '' : Array.isArray(v) ? part(v) : String(v));
+
+  /* ——— State ——— */
+  const $ = s => document.querySelector(s);
+  const params = new URLSearchParams(location.search);
+  const S = {
+    mode: null, def: null, snapshot: '',
+    scale: parseFloat(params.get('scale')) > 0 ? parseFloat(params.get('scale')) : 1,
+    zoom: params.get('zoom') || null,
+    inspecting: false, route: null, tokenNames: new Map()
+  };
+  const FONTS = { text: 'var(--font-text)', display: 'var(--font-display)', rounded: 'var(--font-rounded)', serif: 'var(--font-serif)', mono: 'var(--font-mono)' };
+  const cssName = n => String(n).replace(/[^A-Za-z0-9_-]/g, '-');
+  const pad2 = n => String(n).padStart(2, '0');
+  const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'item';
+
+  function toast(msg) {
+    const t = $('#ads-toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 1600);
+  }
+  function fail(msg) { console.error('[app-design-spec] ' + msg); }
+
+  /* ——— Tokens → CSS ——— */
+  function typeFont(t) { return FONTS[t.font] || t.font || (t.size >= 20 ? FONTS.display : FONTS.text); }
+  function tokenDecls(tokens) {
+    const d = [];
+    const t = tokens || {};
+    for (const [k, v] of Object.entries(t.color || {})) d.push(`--c-${cssName(k)}:${v}`);
+    for (const [k, v] of Object.entries(t.space || {})) d.push(`--s-${cssName(k)}:${v}px`);
+    for (const [k, v] of Object.entries(t.radius || {})) d.push(`--r-${cssName(k)}:${v}px`);
+    for (const [k, v] of Object.entries(t.type || {})) {
+      const n = cssName(k);
+      d.push(`--t-${n}-size:${v.size}px`, `--t-${n}-line:${v.line || Math.round(v.size * 1.25)}px`,
+        `--t-${n}-weight:${v.weight || 400}`, `--t-${n}-font:${typeFont(v)}`,
+        `--t-${n}-track:${v.tracking != null ? v.tracking + 'px' : 'normal'}`);
+    }
+    return d.join(';');
+  }
+  function typeClasses(names) {
+    return [...names].map(k => {
+      const n = cssName(k);
+      return `.t-${n}{font-family:var(--t-${n}-font);font-weight:var(--t-${n}-weight);` +
+        `font-size:calc(var(--t-${n}-size) * var(--text-scale));line-height:calc(var(--t-${n}-line) * var(--text-scale));` +
+        `letter-spacing:var(--t-${n}-track)}`;
+    }).join('\n');
+  }
+  function applyTokens() {
+    let css = '';
+    const names = new Set();
+    if (S.mode === 'spec') {
+      css += `:root{${tokenDecls(S.def.tokens)}}\n`;
+      Object.keys((S.def.tokens || {}).type || {}).forEach(n => names.add(n));
+    } else {
+      for (const g of S.def.groups) {
+        css += `[data-ads-group="${cssName(g.id)}"]{${tokenDecls(g.tokens)}}\n`;
+        Object.keys((g.tokens || {}).type || {}).forEach(n => names.add(n));
+      }
+    }
+    css += typeClasses(names);
+    $('#ads-tokens').textContent = css;
+    document.documentElement.style.setProperty('--text-scale', String(S.scale));
+  }
+
+  /* ——— Colour maths (WCAG 2.x) ——— */
+  const probe = document.createElement('i');
+  function rgba(c) {
+    probe.style.color = ''; probe.style.color = c;
+    if (!probe.style.color) return null;
+    if (!probe.isConnected) { probe.style.display = 'none'; document.body.appendChild(probe); }
+    const m = getComputedStyle(probe).color.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
+    return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+  }
+  function over(fg, bg) { const a = fg[3]; return [0, 1, 2].map(i => fg[i] * a + bg[i] * (1 - a)).concat(1); }
+  function lum(c) {
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+  }
+  function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function grade(r) {
+    if (r >= 4.5) return h`<span class="ads-tag good">TEXT OK</span>`;
+    if (r >= 3) return h`<span class="ads-tag warn">LARGE TEXT ONLY</span>`;
+    if (r < 1.5) return h`<span class="ads-tag fill">FILL / SURFACE</span>`;
+    return h`<span class="ads-tag bad">NOT FOR TEXT</span>`;
+  }
+  function buildTokenNames() {
+    S.tokenNames = new Map();
+    const add = (key, toks) => {
+      const m = new Map();
+      for (const [k, v] of Object.entries((toks && toks.color) || {})) {
+        const c = rgba(v); if (!c) continue;
+        const id = c.map(x => Math.round(x * 100) / 100).join(',');
+        m.set(id, m.has(id) ? m.get(id) + ' / ' + k : k);
+      }
+      S.tokenNames.set(key, m);
+    };
+    if (S.mode === 'spec') add('', S.def.tokens);
+    else S.def.groups.forEach(g => add(g.id, g.tokens));
+  }
+  function colorName(css, el) {
+    const c = rgba(css); if (!c) return css;
+    if (c[3] === 0) return 'clear';
+    const g = el && el.closest('[data-ads-group]');
+    const m = S.tokenNames.get(g ? g.getAttribute('data-ads-group') : '') || new Map();
+    const id = c.map(x => Math.round(x * 100) / 100).join(',');
+    const hex = '#' + c.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase() + (c[3] < 1 ? ' @' + Math.round(c[3] * 100) + '%' : '');
+    return m.has(id) ? m.get(id) + ' · ' + hex : hex;
+  }
+
+  /* ——— Phone frame ——— */
+  const STATUS = '<div class="ads-status" data-chrome aria-hidden="true"><span><b class="ads-time">9:41</b></span><span>' +
+    '<svg width="19" height="12" viewBox="0 0 19 12" fill="currentColor"><rect x="0" y="7.5" width="3.2" height="4.5" rx="1"/><rect x="5.2" y="5" width="3.2" height="7" rx="1"/><rect x="10.4" y="2.5" width="3.2" height="9.5" rx="1"/><rect x="15.6" y="0" width="3.2" height="12" rx="1"/></svg>' +
+    '<svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><path d="M8.5 2.4c2.4 0 4.6.9 6.3 2.5l1.2-1.3A10.5 10.5 0 0 0 8.5.6 10.5 10.5 0 0 0 1 3.6l1.2 1.3a9 9 0 0 1 6.3-2.5zm0 3.6c1.4 0 2.6.5 3.6 1.4l1.3-1.3a7 7 0 0 0-9.8 0l1.3 1.3c1-.9 2.2-1.4 3.6-1.4zm0 3.6c.5 0 1 .2 1.3.5L8.5 11.4 7.2 10.1c.3-.3.8-.5 1.3-.5z"/></svg>' +
+    '<svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.8" fill="none" stroke="currentColor" stroke-opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2.5" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.4-1.1 1.4-2s-.6-1.7-1.4-2z" fill="currentColor" fill-opacity=".45"/></svg>' +
+    '</span></div><div class="ads-island" data-chrome aria-hidden="true"></div>' +
+    '<div class="ads-homebar" data-chrome aria-hidden="true"></div>' +
+    '<div class="safe-top" data-chrome aria-hidden="true"></div><div class="safe-bottom" data-chrome aria-hidden="true"></div>';
+
+  function phone(body, screen, state, status) {
+    const ink = status === 'light' ? '#fff' : status === 'dark' ? '#000' : '';
+    return `<div class="phone" data-screen="${esc(screen)}" data-state="${esc(state)}" role="img" aria-label="${esc(screen + ' · ' + state)}">` +
+      `<div class="screen"${ink ? ` style="--status-fg:${ink}"` : ''}><div class="ads-body">${body}</div>${STATUS}</div></div>`;
+  }
+  function safeRender(fn, ctx, where) {
+    try {
+      if (typeof fn !== 'function') throw new Error('render is not a function');
+      return html(fn(ctx));
+    } catch (e) {
+      fail(`render failed for ${where}: ${e && e.message ? e.message : e}`);
+      return `<div class="ads-render-error">Render failed: ${esc(where)}\n${esc(e && e.message ? e.message : e)}</div>`;
+    }
+  }
+
+  /* ——— Zoom ——— */
+  function zoomFactor() {
+    if (S.zoom === '100') return 1;
+    if (S.zoom === '150') return 1.5;
+    if (S.zoom === '50') return 0.5;
+    const main = $('#ads-main');
+    const hFit = (innerHeight - (S.mode === 'spec' ? 150 : 190)) / 914;
+    let f = hFit;
+    if (S.mode === 'proposals') {
+      const n = Math.min(4, Math.max(1, ...S.def.groups.map(g => (g.items || []).length)));
+      const w = (main.clientWidth - 80 - (n - 1) * 36) / (n * 422);
+      f = Math.min(hFit, w);
+    }
+    return Math.max(0.4, Math.min(1, f));
+  }
+  function applyZoom() {
+    const f = zoomFactor();
+    document.querySelectorAll('#ads-main .ads-zoomwrap').forEach(el => { el.style.zoom = String(f); });
+    document.querySelectorAll('.ads-seg [data-zoom]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.zoom === S.zoom)));
+  }
+  function zoomSeg() {
+    return `<div class="ads-seg" role="group" aria-label="Zoom">${[['fit', 'Fit'], ['100', '100%'], ['150', '150%']]
+      .map(([k, l]) => `<button type="button" data-zoom="${k}" aria-pressed="${k === S.zoom}">${l}</button>`).join('')}</div>`;
+  }
+  addEventListener('resize', () => { if (S.zoom === 'fit') applyZoom(); });
+
+  /* ——— Tools ——— */
+  const ICON = {
+    insp: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5" stroke-dasharray="2 2"/><path d="M8 5v6M5 8h6"/></svg>',
+    text: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1.5 12.5 5 3.5l3.5 9M2.8 9.5h4.4M10 12.5l2.4-6 2.1 6M10.7 10.7h3.2"/></svg>',
+    down: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>',
+    save: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 2.5h8l2.5 2.5v8.5h-10.5z M5.5 2.5v3.5h5v-3.5M5 13.5v-4h6v4"/></svg>'
+  };
+  function toolsHTML() {
+    const dl = (S.mode === 'spec' && S.def.downloads) || [];
+    return `<button type="button" class="ads-btn" data-tool="inspect" aria-pressed="${S.inspecting}">${ICON.insp}Inspect measurements</button>` +
+      `<button type="button" class="ads-btn" data-tool="scale" aria-pressed="${S.scale !== 1}">${ICON.text}Large text</button>` +
+      (dl.length ? '<hr>' : '') +
+      dl.map((d, i) => `<button type="button" class="ads-btn" data-download="${i}">${ICON.down}${esc(d.label || 'Download ' + d.filename)}</button>`).join('') +
+      `<button type="button" class="ads-btn" data-tool="save">${ICON.save}Save this HTML</button>`;
+  }
+  function download(filename, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type: type || 'text/plain;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  function saveHTML() {
+    const name = S.mode === 'spec' ? (S.def.app && S.def.app.name) || 'app' : S.def.title || 'proposals';
+    download(slug(name) + (S.mode === 'spec' ? '-design-spec.html' : '-proposals.html'), S.snapshot, 'text/html;charset=utf-8');
+    toast('Saved a copy of this file');
+  }
+  function setScale(s) {
+    S.scale = s;
+    const u = new URL(location.href);
+    if (s === 1) u.searchParams.delete('scale'); else u.searchParams.set('scale', String(s));
+    history.replaceState(null, '', u);
+    applyTokens(); rerender();
+    document.querySelectorAll('[data-tool="scale"]').forEach(b => b.setAttribute('aria-pressed', String(s !== 1)));
+    toast(s === 1 ? 'Text size: default' : `Text size: ${Math.round(s * 100)}%`);
+  }
+  document.addEventListener('click', e => {
+    const t = e.target.closest && e.target.closest('button,[data-zoom]');
+    if (t && t.dataset.tool === 'inspect') {
+      S.inspecting = !S.inspecting;
+      document.body.classList.toggle('ads-insp-on', S.inspecting);
+      document.querySelectorAll('[data-tool="inspect"]').forEach(b => b.setAttribute('aria-pressed', String(S.inspecting)));
+      if (!S.inspecting) hideInsp();
+      toast(S.inspecting ? 'Hover anything inside a phone' : 'Inspector off');
+      return;
+    }
+    if (t && t.dataset.tool === 'scale') { setScale(S.scale === 1 ? 1.35 : 1); return; }
+    if (t && t.dataset.tool === 'save') { saveHTML(); return; }
+    if (t && t.dataset.download != null) {
+      const d = S.def.downloads[+t.dataset.download];
+      const text = typeof d.text === 'function' ? d.text(S.def.tokens) : d.text;
+      download(d.filename, String(text), d.type); toast('Downloaded ' + d.filename); return;
+    }
+    if (t && t.dataset.zoom) { S.zoom = t.dataset.zoom; applyZoom(); return; }
+    const inPhone = e.target.closest && e.target.closest('.screen');
+    if (inPhone && S.inspecting) { e.preventDefault(); e.stopPropagation(); return; }
+    if (inPhone) e.preventDefault();
+    if (S.mode === 'proposals') {
+      const lb = e.target.closest('.ads-lightbox');
+      if (lb) { lb.remove(); return; }
+      const ph = e.target.closest('#ads-main .phone');
+      if (ph && !S.inspecting) openLightbox(ph);
+    }
+  }, true);
+  document.addEventListener('submit', e => e.preventDefault(), true);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { const lb = $('.ads-lightbox'); if (lb) lb.remove(); return; }
+    if (S.mode !== 'spec' || e.metaKey || e.ctrlKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const r = routes(); const i = r.indexOf(S.route);
+    const n = r[i + (e.key === 'ArrowRight' ? 1 : -1)];
+    if (n) location.hash = n;
+  });
+
+  /* ——— Inspector ——— */
+  function hideInsp() { ['#ads-hl', '#ads-hl-pad', '#ads-tip'].forEach(s => { $(s).hidden = true; }); }
+  document.addEventListener('mousemove', e => {
+    if (!S.inspecting) return;
+    const el = e.target.closest && e.target.closest('.screen *');
+    if (!el || el.closest('[data-chrome]')) { hideInsp(); return; }
+    const r = el.getBoundingClientRect();
+    const wrap = el.closest('.ads-zoomwrap,.ads-lbwrap');
+    const z = (wrap && parseFloat(wrap.style.zoom)) || 1;
+    const cs = getComputedStyle(el);
+    const px = v => Math.round(parseFloat(v) * 10) / 10;
+    const pad = [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map(px);
+    const hl = $('#ads-hl'); Object.assign(hl.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); hl.hidden = false;
+    const pd = $('#ads-hl-pad');
+    if (pad.some(Boolean)) {
+      const [t, rt, b, l] = pad.map(v => v * z);
+      Object.assign(pd.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px',
+        clipPath: `polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,${l}px ${t}px,${l}px calc(100% - ${b}px),calc(100% - ${rt}px) calc(100% - ${b}px),calc(100% - ${rt}px) ${t}px,${l}px ${t}px)` });
+      pd.hidden = false;
+    } else pd.hidden = true;
+    const named = el.closest('[data-c]');
+    const title = el.dataset.c || (named ? named.dataset.c + ' › ' + el.tagName.toLowerCase() : el.tagName.toLowerCase() + (el.classList[0] ? '.' + el.classList[0] : ''));
+    const lines = [`size <i>${px(r.width / z)} × ${px(r.height / z)} pt</i>`];
+    if (pad.some(Boolean)) lines.push(`padding <i>${pad[0] === pad[2] && pad[1] === pad[3] ? (pad[0] === pad[1] ? pad[0] : pad[0] + ' ' + pad[1]) : pad.join(' ')}</i>`);
+    const scr = el.closest('.screen').getBoundingClientRect();
+    lines.push(`at <i>x ${px((r.left - scr.left) / z)} · y ${px((r.top - scr.top) / z)}</i>`);
+    const hasText = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
+    if (hasText) {
+      const cls = [...el.classList].find(c => c.startsWith('t-'));
+      lines.push(`font <i>${px(cs.fontSize)}/${px(cs.lineHeight) || 'normal'} · ${cs.fontWeight}${cls ? ' · ' + cls.slice(2) : ''}</i>`);
+      lines.push(`colour <i>${esc(colorName(cs.color, el))}</i>`);
+    }
+    if (cs.backgroundColor && !/rgba\(0, 0, 0, 0\)|transparent/.test(cs.backgroundColor)) lines.push(`fill <i>${esc(colorName(cs.backgroundColor, el))}</i>`);
+    if (parseFloat(cs.borderTopLeftRadius)) lines.push(`radius <i>${px(cs.borderTopLeftRadius)}</i>`);
+    const tip = $('#ads-tip');
+    tip.innerHTML = `<b>${esc(title)}</b>` + lines.join('<br>');
+    tip.hidden = false;
+    tip.style.left = Math.min(innerWidth - tip.offsetWidth - 10, e.clientX + 16) + 'px';
+    tip.style.top = Math.min(innerHeight - tip.offsetHeight - 10, e.clientY + 16) + 'px';
+  });
+  document.addEventListener('mouseleave', hideInsp);
+  addEventListener('scroll', hideInsp, true);
+
+  /* ——— Spec mode ——— */
+  function routes() {
+    if (S.mode !== 'spec') return ['proposals'];
+    return ['foundations', ...(S.def.foundations || []).map(f => f.id), ...(S.def.voice && S.def.voice.length ? ['voice'] : []), ...S.def.screens.map(s => s.id)];
+  }
+  function navHTML() {
+    const d = S.def;
+    const item = (id, num, title, count) => `<a class="ads-navitem" href="#${esc(id)}" data-route="${esc(id)}"><span class="ads-num">${num}</span><span class="ads-navt">${esc(title)}</span>${count != null ? `<span class="ads-navc" title="${count} states">${count}</span>` : ''}</a>`;
+    let out = '<div class="ads-navlabel">Start</div>' + item('foundations', '00', 'Foundations');
+    (d.foundations || []).forEach(f => { out += item(f.id, '··', f.title || f.id); });
+    if (d.voice && d.voice.length) out += item('voice', '··', 'Voice');
+    out += '<div class="ads-navlabel">Screens</div>';
+    d.screens.forEach((s, i) => { out += item(s.id, pad2(i + 1), s.title || s.id, (s.states || []).length); });
+    return out;
+  }
+  function head(eyebrow, title, lede, extra, right) {
+    return `<header class="ads-head"><div class="ads-head-text"><div class="ads-eyebrow">${eyebrow}${S.scale !== 1 ? ` · <span class="ads-flag">Text ${Math.round(S.scale * 100)}%</span>` : ''}</div>` +
+      `<h1 class="ads-h1">${esc(title)}</h1>${lede ? `<p class="ads-lede">${lede}</p>` : ''}${extra || ''}</div>${right || ''}</header>`;
+  }
+  function voiceTable(voice) {
+    const why = voice.some(v => v.why);
+    return `<table class="ads-voice"><thead><tr><th>Instead of</th><th>Say</th>${why ? '<th>Why</th>' : ''}</tr></thead><tbody>` +
+      voice.map(v => `<tr><td>${esc(v.instead)}</td><td>${esc(v.say)}</td>${why ? `<td>${html(v.why || '')}</td>` : ''}</tr>`).join('') + '</tbody></table>';
+  }
+  function renderFoundations() {
+    const t = S.def.tokens || {}, app = S.def.app || {};
+    const colors = Object.entries(t.color || {});
+    const bgKey = ['bg', 'background', 'canvas'].find(k => t.color && t.color[k]) || (colors[0] || [])[0];
+    const textKey = ['text', 'label', 'fg', 'ink'].find(k => t.color && t.color[k]) || (colors.find(([k]) => k !== bgKey) || [])[0];
+    const bg = bgKey && rgba(t.color[bgKey]);
+    let out = head('Start here', 'Foundations',
+      `Every screen is drawn at 1 CSS px = 1 iOS point on a 402 × 874 iPhone canvas (top safe area 62, bottom 34), from the tokens below. Turn on <b>Inspect measurements</b> and hover any element to read its size, padding, font and colour token. <b>Large text</b> redraws every screen at 135% text.`,
+      app.intro ? `<div class="ads-lede">${html(app.intro)}</div>` : '');
+    if (colors.length) {
+      out += `<h2 class="ads-h2">Colour</h2><p class="ads-sub">CSS variables <code>--c-name</code>. Contrast is measured against <code>${esc(bgKey)}</code>${textKey ? `; ${esc(bgKey)} itself against <code>${esc(textKey)}</code>` : ''}. Text needs 4.5:1, large text (24 pt, or 18.66 pt bold) 3:1.</p><div class="ads-swatches">` +
+        colors.map(([k, v]) => {
+          const c = rgba(v);
+          let note = '';
+          const ref = k === bgKey ? (textKey && rgba(t.color[textKey])) : c;
+          if (c && bg && ref) {
+            const base = over(bg, [255, 255, 255, 1]);
+            const r = ratio(over(ref, base), base);
+            note = `<span>${r.toFixed(2)}:1 ${k === bgKey ? 'with ' + esc(textKey) : 'as text on ' + esc(bgKey)}</span><span>${grade(r)}</span>`;
+          }
+          return `<div class="ads-swatch"><i style="background:${esc(v)}"></i><div><b>${esc(k)}</b><span>${esc(v)}</span>${note}</div></div>`;
+        }).join('') + '</div>';
+    }
+    const types = Object.entries(t.type || {});
+    if (types.length) {
+      out += `<h2 class="ads-h2">Type</h2><p class="ads-sub">Classes <code>.t-name</code>; sizes multiply by <code>--text-scale</code> so Large text works everywhere. Sizes in points, size / line height.</p><div class="ads-ramp">` +
+        types.map(([k, v]) => `<div class="ads-ramp-row"><code>${esc(k)}</code><div class="ads-sample t-${cssName(k)}">${esc(v.sample || k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, m => m.toUpperCase()))}</div><div class="ads-meta">${v.size} / ${v.line || Math.round(v.size * 1.25)} · ${v.weight || 400}${v.font ? ' · ' + esc(v.font) : ''}</div></div>`).join('') + '</div>';
+    }
+    const space = Object.entries(t.space || {});
+    if (space.length) {
+      out += `<h2 class="ads-h2">Spacing</h2><p class="ads-sub">Variables <code>--s-name</code>, in points.</p><div class="ads-bars">` +
+        space.map(([k, v]) => `<div class="ads-bar"><b>${esc(k)}</b><span>${v} pt</span><i style="width:${Math.max(1, v) * 4}px"></i></div>`).join('') + '</div>';
+    }
+    const radii = Object.entries(t.radius || {});
+    if (radii.length) {
+      out += `<h2 class="ads-h2">Corner radius</h2><p class="ads-sub">Variables <code>--r-name</code>. Use continuous corners (<code>RoundedRectangle(cornerRadius:style:.continuous)</code>) in SwiftUI.</p><div class="ads-radii">` +
+        radii.map(([k, v]) => `<div class="ads-radius"><i style="border-radius:${Math.min(v, 44)}px"></i><b>${esc(k)}</b>${v} pt</div>`).join('') + '</div>';
+    }
+    if (S.def.voice && S.def.voice.length) out += `<h2 class="ads-h2">Voice</h2><p class="ads-sub">Words the app uses. Every label, error and empty state follows this table.</p>` + voiceTable(S.def.voice);
+    return out;
+  }
+  function renderScreen(s, i) {
+    const n = S.def.screens.length, states = s.states || [];
+    const code = (s.code || []).length ? `<div class="ads-code">Maps to ${s.code.map(c => `<code>${esc(c)}</code>`).join('')}</div>` : '';
+    let out = head(`${pad2(i + 1)} / ${pad2(n)} · ${states.length} state${states.length === 1 ? '' : 's'}`, s.title || s.id, s.summary ? esc(s.summary) : '', code, zoomSeg());
+    out += '<div class="ads-states">' + states.map(st => {
+      const ctx = { screen: s, state: st, tokens: S.def.tokens, textScale: S.scale, mode: 'spec' };
+      const body = safeRender(st.render, ctx, `${s.id}/${st.id}`);
+      return `<section class="ads-state" id="state-${esc(s.id)}-${esc(st.id)}"><header><b>${esc(st.label || st.id)}</b><span>402 × 874</span></header>` +
+        `<div class="ads-zoomwrap">${phone(body, s.id, st.id, st.status)}</div>${st.note ? `<p>${html(st.note)}</p>` : ''}</section>`;
+    }).join('') + '</div>';
+    if ((s.notes || []).length) {
+      out += `<section class="ads-notes"><h2 class="ads-h2">Implementation notes</h2><div class="ads-grid">` +
+        s.notes.map(nt => `<article class="ads-note"><h3>${esc(nt.title || '')}</h3><div>${html(nt.body)}</div></article>`).join('') + '</div></section>';
+    }
+    const prev = S.def.screens[i - 1], next = S.def.screens[i + 1];
+    out += `<nav class="ads-pager">${prev ? `<a href="#${esc(prev.id)}"><small>← Previous</small>${esc(prev.title || prev.id)}</a>` : ''}${next ? `<a class="next" href="#${esc(next.id)}"><small>Next →</small>${esc(next.title || next.id)}</a>` : ''}</nav>`;
+    return out;
+  }
+  function renderSpecRoute(id) {
+    const d = S.def;
+    const r = routes();
+    if (!r.includes(id)) id = 'foundations';
+    S.route = id;
+    let out;
+    const si = d.screens.findIndex(s => s.id === id);
+    if (si >= 0) out = renderScreen(d.screens[si], si);
+    else if (id === 'voice') out = head('Start', 'Voice', 'Words the app uses, and the words it avoids.') + voiceTable(d.voice);
+    else if (id === 'foundations') out = renderFoundations();
+    else {
+      const f = d.foundations.find(x => x.id === id);
+      out = head('Start', f.title || f.id, f.summary ? esc(f.summary) : '') + safeRender(f.render, { tokens: d.tokens, textScale: S.scale, mode: 'spec' }, 'foundations/' + f.id);
+    }
+    const main = $('#ads-main');
+    main.innerHTML = out;
+    document.querySelectorAll('.ads-navitem').forEach(a => a.toggleAttribute('aria-current', false));
+    const cur = document.querySelector(`.ads-navitem[data-route="${CSS.escape(id)}"]`);
+    if (cur) { cur.setAttribute('aria-current', 'page'); }
+    applyZoom();
+    hideInsp();
+    return id;
+  }
+  function rerender() {
+    if (S.mode === 'spec') renderSpecRoute(S.route);
+    else renderProposals();
+  }
+
+  function validateSpec(d) {
+    if (!d || !Array.isArray(d.screens)) { fail('defineSpec: "screens" must be an array'); d.screens = []; }
+    const seen = new Set(['foundations', 'voice']);
+    for (const f of d.foundations || []) { if (seen.has(f.id)) fail(`duplicate id "${f.id}"`); seen.add(f.id); }
+    for (const s of d.screens) {
+      if (!s.id) fail('a screen has no id');
+      if (seen.has(s.id)) fail(`duplicate or reserved screen id "${s.id}"`);
+      seen.add(s.id);
+      const st = new Set();
+      for (const x of s.states || []) { if (st.has(x.id)) fail(`screen "${s.id}" has duplicate state id "${x.id}"`); st.add(x.id); }
+    }
+  }
+  function defineSpec(d) {
+    if (S.mode) { fail('define called twice; call defineSpec or defineProposals once'); return; }
+    S.snapshot = '<!doctype html>\n' + document.documentElement.outerHTML;
+    S.mode = 'spec'; S.def = d || {};
+    validateSpec(S.def);
+    S.zoom = S.zoom || '100';
+    document.body.classList.add('ads-mode-spec');
+    const app = S.def.app || {};
+    document.title = [app.name, app.subtitle].filter(Boolean).join(' · ') || document.title;
+    $('#ads-name').textContent = app.name || 'App';
+    $('#ads-subtitle').textContent = app.subtitle || 'iOS design spec';
+    $('#ads-nav').innerHTML = navHTML();
+    $('#ads-tools').innerHTML = toolsHTML();
+    applyTokens(); buildTokenNames();
+    addEventListener('hashchange', () => { renderSpecRoute(decodeURIComponent(location.hash.slice(1))); scrollTo(0, 0); });
+    renderSpecRoute(decodeURIComponent(location.hash.slice(1)) || 'foundations');
+  }
+
+  /* ——— Proposals mode ——— */
+  function chips(t) {
+    const colors = Object.entries((t && t.color) || {});
+    const types = Object.entries((t && t.type) || {}).slice(0, 4);
+    return `<div class="ads-chips">${colors.length ? `<div class="ads-chiprow">${colors.map(([k, v]) => `<span class="ads-chip" title="${esc(k)}: ${esc(v)}"><i style="background:${esc(v)}"></i>${esc(k)}${/^#[0-9a-f]{3,8}$/i.test(v) ? ` <span>${esc(String(v).toUpperCase())}</span>` : ''}</span>`).join('')}</div>` : ''}` +
+      `${types.length ? `<div class="ads-chiprow">${types.map(([k, v]) => `<span class="ads-chip"><em style="font-family:${typeFont(v)};font-weight:${v.weight || 400}">Aa</em>${esc(k)} ${v.size}/${v.line || Math.round(v.size * 1.25)}</span>`).join('')}</div>` : ''}</div>`;
+  }
+  const PICK = '<span class="ads-pick">✓ Picked</span>';
+  function renderProposals() {
+    const d = S.def;
+    let out = head(esc(d.eyebrow || 'Proposals'), d.title || 'Proposals', d.intro ? html(d.intro) : '', '', zoomSeg());
+    for (const g of d.groups) {
+      const used = new Set();
+      out += `<section class="ads-group" id="${esc(g.id)}" data-ads-group="${esc(cssName(g.id))}"><div class="ads-ghead"><div><h2>${esc(g.title || g.id)}${g.pick ? PICK : ''}</h2>` +
+        `${g.blurb ? `<p>${html(g.blurb)}</p>` : ''}${g.why ? `<div class="ads-why">${html(g.why)}</div>` : ''}</div>${chips(g.tokens)}</div><div class="ads-strip">` +
+        (g.items || []).map((it, i) => {
+          let sl = slug(it.id || it.label || 'item-' + (i + 1));
+          if (used.has(sl)) sl += '-' + (i + 1);
+          used.add(sl);
+          const ctx = { group: g, item: it, tokens: g.tokens, textScale: S.scale, mode: 'proposals' };
+          const body = safeRender(it.render, ctx, `${g.id}/${sl}`);
+          return `<figure class="ads-item"><figcaption>${esc(it.label || sl)}${it.pick ? PICK : ''}</figcaption><div class="ads-zoomwrap">${phone(body, g.id, sl, it.status)}</div>${it.note ? `<p>${html(it.note)}</p>` : ''}</figure>`;
+        }).join('') + '</div></section>';
+    }
+    $('#ads-main').innerHTML = out;
+    applyZoom();
+    hideInsp();
+  }
+  function openLightbox(ph) {
+    const lb = document.createElement('div');
+    lb.className = 'ads-lightbox';
+    const fig = ph.closest('.ads-item');
+    const cap = fig ? fig.querySelector('figcaption').textContent : '';
+    const grp = ph.closest('[data-ads-group]').getAttribute('data-ads-group');
+    const f = Math.max(0.4, Math.min(1.5, (innerHeight - 90) / 914));
+    lb.setAttribute('data-ads-group', grp);
+    lb.innerHTML = `<figcaption>${esc(cap)} · click or Esc to close</figcaption><div class="ads-lbwrap" style="zoom:${f}"></div>`;
+    const clone = ph.cloneNode(true);
+    clone.removeAttribute('data-screen'); clone.removeAttribute('data-state');
+    lb.querySelector('.ads-lbwrap').appendChild(clone);
+    document.body.appendChild(lb);
+  }
+  function defineProposals(p) {
+    if (S.mode) { fail('define called twice; call defineSpec or defineProposals once'); return; }
+    S.snapshot = '<!doctype html>\n' + document.documentElement.outerHTML;
+    S.mode = 'proposals'; S.def = p || {};
+    if (!Array.isArray(S.def.groups)) { fail('defineProposals: "groups" must be an array'); S.def.groups = []; }
+    const ids = new Set();
+    S.def.groups.forEach((g, i) => {
+      if (!g.id) { g.id = 'g' + (i + 1); fail(`group ${i + 1} has no id`); }
+      if (ids.has(g.id)) fail(`duplicate group id "${g.id}"`); ids.add(g.id);
+      if (!(g.items || []).length) fail(`group "${g.id}" has no items`);
+    });
+    S.zoom = S.zoom || 'fit';
+    S.route = 'proposals';
+    document.body.classList.add('ads-mode-proposals');
+    document.title = S.def.title || document.title;
+    const bar = document.createElement('div');
+    bar.className = 'ads-ptop';
+    bar.innerHTML = `<b>${esc(S.def.title || 'Proposals')}</b><nav>${S.def.groups.map(g => `<a href="#${esc(g.id)}">${esc(g.title || g.id)}</a>`).join('')}</nav>` +
+      toolsHTML().replace(/Inspect measurements/, 'Inspect');
+    document.body.insertBefore(bar, document.body.firstChild);
+    applyTokens(); buildTokenNames();
+    renderProposals();
+  }
+
+  /* ——— Checker hooks ——— */
+  window.ADS = {
+    get mode() { return S.mode; },
+    routes: () => S.mode === 'spec' ? S.def.screens.map(s => s.id) : ['proposals'],
+    go: id => (S.mode === 'spec' ? renderSpecRoute(id) : (renderProposals(), 'proposals')),
+    phones: () => [...document.querySelectorAll('#ads-main .phone')].map(p => ({ screen: p.dataset.screen, state: p.dataset.state })),
+    info: () => S.mode === 'spec'
+      ? { mode: 'spec', screens: S.def.screens.map(s => ({ id: s.id, title: s.title, states: (s.states || []).map(x => ({ id: x.id, label: x.label || '' })) })) }
+      : { mode: 'proposals', groups: S.def.groups.map(g => ({ id: g.id, title: g.title, items: (g.items || []).length })) }
+  };
+  window.h = h; window.raw = raw; window.esc = esc;
+  window.defineSpec = defineSpec; window.defineProposals = defineProposals;
+  addEventListener('DOMContentLoaded', () => { if (!S.mode) fail('the app script never called defineSpec() or defineProposals()'); });
+})();
+</script>
+<!-- APP:SCRIPT -->
+</body>
+</html>

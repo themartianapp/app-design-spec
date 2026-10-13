@@ -1,0 +1,69 @@
+/* Tidewise proposals: shared component styles. Each direction sets its own tokens
+   (scoped by the shell), so the same classes take on each direction's colours,
+   type and radii. Direction-specific layout lives under .pv-a / .pv-b / .pv-c. */
+
+.pv{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;background:var(--c-bg);color:var(--c-text)}
+.pv-scroll{flex:1;min-height:0;overflow-y:auto;padding:var(--safe-top) var(--s-l) calc(83px + var(--s-m))}
+.pv-muted{color:var(--c-muted)}
+.pv-num{font-variant-numeric:tabular-nums}
+.pv-navrow{height:44px;display:flex;align-items:center;justify-content:space-between}
+.pv-round{width:40px;height:40px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:var(--c-surface);color:var(--c-text);box-shadow:0 0 0 .5px var(--c-hairline)}
+.pv-round svg,.pv-ico{width:20px;height:20px}
+.pv-title{padding:var(--s-xxs) 0 var(--s-m)}
+.pv-card{background:var(--c-surface);border-radius:var(--r-card);box-shadow:0 0 0 .5px var(--c-hairline)}
+.pv-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:var(--r-chip);background:var(--c-accentSoft);color:var(--c-accent);white-space:nowrap}
+.pv-chip svg{width:14px;height:14px}
+.pv-axis{display:flex;justify-content:space-between;margin-top:6px;color:var(--c-muted)}
+.pv-chart svg{width:100%;height:auto}
+
+/* Tide event strip */
+.pv-events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-xs);margin-top:var(--s-s)}
+.pv-event{padding:var(--s-s);border-radius:var(--r-tile);background:var(--c-surface);box-shadow:0 0 0 .5px var(--c-hairline)}
+.pv-event .t-footnote{color:var(--c-muted)}
+.pv-event.next{box-shadow:0 0 0 1.5px var(--c-accent)}
+
+/* List */
+.pv-list{background:var(--c-surface);border-radius:var(--r-card);overflow:hidden;box-shadow:0 0 0 .5px var(--c-hairline)}
+.pv-row{display:flex;align-items:center;gap:var(--s-s);padding:var(--s-s) var(--s-m);min-height:64px}
+.pv-row+.pv-row{border-top:.5px solid var(--c-hairline)}
+.pv-row .pv-grow{flex:1;min-width:0}
+.pv-row .t-footnote{color:var(--c-muted);margin-top:2px}
+.pv-row .pv-trail{text-align:right;flex:none}
+.pv-badge{flex:none;width:40px;height:40px;border-radius:12px;background:var(--c-accentSoft);color:var(--c-accent);display:flex;align-items:center;justify-content:center}
+.pv-badge svg{width:22px;height:22px}
+.pv-bar{height:6px;border-radius:3px;background:var(--c-surface2);margin-top:8px;overflow:hidden}
+.pv-bar i{display:block;height:100%;border-radius:3px;background:var(--c-accent)}
+
+/* Week */
+.pv-day{display:grid;grid-template-columns:58px minmax(0,1fr) minmax(0,1fr);gap:var(--s-xs);padding:var(--s-s) var(--s-m);align-items:baseline}
+.pv-day+.pv-day{border-top:.5px solid var(--c-hairline)}
+.pv-day .t-caption{color:var(--c-muted)}
+.pv-day b{font-weight:600}
+.pv-day small{color:var(--c-muted)}
+.pv-day>span{display:flex;flex-direction:column}
+.pv-dayhead{color:var(--c-muted);padding-bottom:0}
+.pv-today{color:var(--c-accent)}
+
+/* Tab bar */
+.pv-tabs{position:absolute;left:0;right:0;bottom:0;padding:0 var(--s-xs) var(--safe-bottom);display:flex;background:var(--c-bar);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid var(--c-hairline)}
+.pv-tab{flex:1;height:49px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--c-muted);font-size:10px;line-height:12px;font-weight:500}
+.pv-tab svg{width:24px;height:24px}
+.pv-tab[aria-selected="true"]{color:var(--c-accent)}
+
+/* A · Harbour: dark, one huge number, tide clock */
+.pv-a .pv-dial{display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--s-m) 0 var(--s-l)}
+.pv-a .pv-dial svg{width:250px;height:250px}
+.pv-a .pv-dial .pv-inner{margin-top:-178px;height:178px;display:flex;flex-direction:column;align-items:center}
+.pv-a .pv-dial .t-callout{margin-top:var(--s-l)}
+.pv-a .pv-event{background:var(--c-surface)}
+
+/* C · Chart: paper, serif headings, full-bleed chart, ruled rows */
+.pv-c .pv-scroll{padding-left:0;padding-right:0}
+.pv-c .pv-pad{padding:0 var(--s-l)}
+.pv-c .pv-rule{border-top:1px solid var(--c-text);margin:0 var(--s-l)}
+.pv-c .pv-chart{padding:var(--s-s) 0 0}
+.pv-c .pv-axis{padding:0 var(--s-l)}
+.pv-c .pv-table{margin:var(--s-m) var(--s-l) 0}
+.pv-c .pv-trow{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:var(--s-s);align-items:baseline;padding:var(--s-s) 0;border-bottom:1px solid var(--c-hairline)}
+.pv-c .pv-trow .t-caption{color:var(--c-muted);text-transform:uppercase;letter-spacing:.8px}
+.pv-c .pv-list,.pv-c .pv-card{box-shadow:none;border:1px solid var(--c-hairline)}
